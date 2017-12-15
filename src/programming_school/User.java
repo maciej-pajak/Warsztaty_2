@@ -16,18 +16,22 @@ public class User {
     private String email;
     private String password;
     
-    // load from database
-    public User() {};
-    
     // create new
     public User(String username, String email, String password) {
-        super();
-        setUsername(username);
-        setEmail(email);
-        setPassword(password);
+        this(0, username, email, password);
     }
     
-    // TODO add private constructor
+    
+    private User(int id, String username, String email, String password) {
+        setUsername(username);
+        setEmail(email);
+        this.id = id;
+        if ( id == 0 ) {
+            setPassword(password);
+        } else {
+            this.password = password;   // TODO check
+        }
+    }
     
     public int getId() {
         return this.id;
@@ -57,11 +61,6 @@ public class User {
 
     public User setPassword(String password) {
         this.password = BCrypt.hashpw(password, BCrypt.gensalt());
-        return this;
-    }
-    
-    private User setId(int id) {
-        this.id = id;
         return this;
     }
     
@@ -113,12 +112,7 @@ public class User {
         ResultSet rs = con.prepareStatement(sql).executeQuery();
         
         while ( rs.next() ) {
-            User usr = new User();
-            usr.setId(rs.getInt("id"));
-            usr.setUsername(rs.getString("username"));
-            usr.setEmail(rs.getString("email"));
-            usr.password = rs.getString("password");
-            usersList.add(usr);
+            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password")));
         }
        
         return usersList.toArray(new User[usersList.size()]);
@@ -131,12 +125,7 @@ public class User {
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            User usr = new User();
-            usr.setId(rs.getInt("id"));
-            usr.setUsername(rs.getString("username"));
-            usr.setEmail(rs.getString("email"));
-            usr.password = rs.getString("password");
-            return usr;
+            return new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"));
         }
         return null;
     }

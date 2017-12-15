@@ -14,8 +14,7 @@ public class Group {
     
     
     public Group(String name) {
-        this.setName(name);
-        this.id = 0;
+        this(0, name);
     }
     
     private Group(int id, String name) {

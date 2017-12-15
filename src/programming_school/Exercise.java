@@ -2,7 +2,10 @@ package programming_school;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Exercise {
     
@@ -11,11 +14,9 @@ public class Exercise {
     private int user_id;
     private int solution_id;
     
+    // constructors
     public Exercise(String title, int user_id, int solution_id) {
-        setTitle(title);
-        setUser_id(user_id);
-        setSolution_id(solution_id);
-        this.id = 0;
+        this(0, title, user_id, solution_id);
     }
     
     private Exercise(int id, String title, int user_id, int solution_id) {  
@@ -25,6 +26,58 @@ public class Exercise {
         this.id = id;
     }
 
+    public static Exercise loadById(Connection con, int id) throws SQLException {
+        final String sql = "SELECT * FROM exercise WHERE id=?";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if ( rs.next() ) {
+            return new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id"));
+        }
+        return null;
+    }
+    
+    public static Exercise[] loadAll(Connection con) throws SQLException {
+        List<Exercise> exerciseList = new ArrayList<Exercise>();
+        final String sql = "SELECT * FROM exercise";
+        ResultSet rs = con.prepareStatement(sql).executeQuery();
+        while ( rs.next() ) {
+            exerciseList.add(new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id")) );
+        }
+        return exerciseList.toArray(new Exercise[exerciseList.size()]);
+    }
+    
+    public void saveToDb(Connection con) throws SQLException {
+        if ( this.id == 0 ) {   // create new
+            saveNewToDb(con);
+        } else {                // update existing
+            updateExistingInDb(con);
+        }
+    }
+    
+    private void saveNewToDb(Connection con) throws SQLException {
+        String sql = "INSERT INTO exercise VALUES(null, ?, ?, ?);";
+        String[] genereatedColumns = { "id" }; // TODO rethink
+        PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
+        ps.setString(1, this.getTitle());
+        ps.setInt(2, this.getUser_id());
+        ps.setInt(3, this.getSolution_id());
+        ps.executeUpdate();
+        ResultSet rs = ps.getGeneratedKeys();
+        if ( rs.next() ) {
+            this.id = rs.getInt(1);
+        }    
+    }
+    
+    private void updateExistingInDb(Connection con) throws SQLException {
+        String sql = "UPDATE exercise SET title=?, user_id=?, solution_id=? WHERE id=?;";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1, this.getTitle());
+        ps.setInt(2, this.getUser_id());
+        ps.setInt(3, this.getSolution_id());
+        ps.setInt(4, this.getId());
+        ps.executeUpdate();
+    }
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
