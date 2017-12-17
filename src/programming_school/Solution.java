@@ -33,21 +33,33 @@ public class Solution {
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            Solution sol = new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description"));
-            return sol;
+            return new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description"));    // TODO define constructor form ResultSet
         }
         return null;
     }
     
     public static Solution[] loadAll(Connection con) throws SQLException {
         List<Solution> solutionList = new ArrayList<Solution>();
-        String sql = "SELECT * FROM solution;";
+        final String sql = "SELECT * FROM solution;";
         ResultSet rs = con.prepareStatement(sql).executeQuery();
         
         while ( rs.next() ) {
             solutionList.add( new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description")) );
         }
        
+        return solutionList.toArray(new Solution[solutionList.size()]);
+    }
+    
+    public static Solution[] loadAllByExerciseId(Connection con, int id) throws SQLException {
+        List<Solution> solutionList = new ArrayList<Solution>();
+        final String sql = "SELECT * FROM solution JOIN exercise ON solution.id=exercise.soultion_id WHERE exercise.id=?";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        while ( rs.next() ) {
+            solutionList.add( new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description")) );
+        }
+        
         return solutionList.toArray(new Solution[solutionList.size()]);
     }
     
