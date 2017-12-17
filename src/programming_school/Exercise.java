@@ -47,6 +47,18 @@ public class Exercise {
         return exerciseList.toArray(new Exercise[exerciseList.size()]);
     }
     
+    public static Exercise[] loadAllByUserId(Connection con, int id) throws SQLException {
+        List<Exercise> exerciseList = new ArrayList<Exercise>();
+        final String sql = "SELECT * FROM exercise WHERE user_id=?";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        while ( rs.next() ) {
+            exerciseList.add(new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id")) );
+        }
+        return exerciseList.toArray(new Exercise[exerciseList.size()]);
+    }
+    
     public void saveToDb(Connection con) throws SQLException {
         if ( this.id == 0 ) {   // create new
             saveNewToDb(con);
