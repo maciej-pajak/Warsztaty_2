@@ -33,8 +33,6 @@ public class Group {
        
         return groupList.toArray(new Group[groupList.size()]);
     }
-
-    // TODO loadById, saveToDb, delete
     
     public static Group loadById(Connection con, int id) throws SQLException {
         String sql = "SELECT * FROM user_group WHERE id=?;";
@@ -48,6 +46,34 @@ public class Group {
             return gr;
         }
         return null;
+    }
+    
+    public void saveToDb(Connection con) throws SQLException {
+        if ( this.id == 0 ) {   // create new
+            saveNewToDb(con);
+        } else {                // update existing
+            updateExistingInDb(con);
+        }
+    }
+    
+    private void saveNewToDb(Connection con) throws SQLException {
+        String sql = "INSERT INTO user_group VALUES(null, ?);";
+        String[] genereatedColumns = { "id" }; // TODO rethink
+        PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
+        ps.setString(1, this.getName());
+        ps.executeUpdate();
+        ResultSet rs = ps.getGeneratedKeys();
+        if ( rs.next() ) {
+            this.id = rs.getInt(1);
+        }    
+    }
+    
+    private void updateExistingInDb(Connection con) throws SQLException {
+        String sql = "UPDATE user_group SET name=? WHERE id=?;";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1, this.getName());
+        ps.setInt(2, this.getId());
+        ps.executeUpdate();
     }
     
     public void delete(Connection con) throws SQLException {
