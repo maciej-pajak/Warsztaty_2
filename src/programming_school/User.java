@@ -130,6 +130,20 @@ public class User {
         return null;
     }
     
+    public static User[] loadAllByGroupId(Connection con, int id) throws SQLException {
+        List<User> usersList = new ArrayList<User>();
+        String sql = "SELECT * FROM user WHERE user_group_id=?;";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        
+        while ( rs.next() ) {
+            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password")));
+        }
+       
+        return usersList.toArray(new User[usersList.size()]);
+    }
+    
     @Override
     public String toString() {      // TODO improve?
         StringBuilder sb = new StringBuilder();
