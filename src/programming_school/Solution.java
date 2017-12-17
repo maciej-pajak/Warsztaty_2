@@ -1,6 +1,7 @@
 package programming_school;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,15 +11,15 @@ import java.util.List;
 public class Solution {
     
     private int id;
-    private String created; // TODO type? Date of String?? if Date update constructor
-    private String updated; // TODO
+    private Date created;
+    private Date updated;
     private String description;
     
-    public Solution(String created, String updated, String description) {
+    public Solution(Date created, Date updated, String description) {
         this(0, created, updated, description);
     }
     
-    private Solution(int id, String created, String updated, String description) {
+    private Solution(int id, Date created, Date updated, String description) {
         this.id = id;
         setCreated(created);
         setUpdated(updated);
@@ -32,7 +33,7 @@ public class Solution {
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            Solution sol = new Solution(rs.getInt("id"), rs.getString("created"), rs.getString("updated"), rs.getString("description"));
+            Solution sol = new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description"));
             return sol;
         }
         return null;
@@ -44,7 +45,7 @@ public class Solution {
         ResultSet rs = con.prepareStatement(sql).executeQuery();
         
         while ( rs.next() ) {
-            solutionList.add( new Solution(rs.getInt("id"), rs.getString("created"), rs.getString("updated"), rs.getString("description")) );
+            solutionList.add( new Solution(rs.getInt("id"), rs.getDate("created"), rs.getDate("updated"), rs.getString("description")) );
         }
        
         return solutionList.toArray(new Solution[solutionList.size()]);
@@ -72,8 +73,8 @@ public class Solution {
         String sql = "INSERT INTO solution VALUES(null, ?, ?, ?);";
         String[] genereatedColumns = { "id" }; // TODO rethink
         PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
-        ps.setString(1, this.getCreated());
-        ps.setString(2, this.getUpdated());
+        ps.setDate(1, this.getCreated());
+        ps.setDate(2, this.getUpdated());
         ps.setString(3, this.getDescription());
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
@@ -85,8 +86,8 @@ public class Solution {
     private void updateExistingInDb(Connection con) throws SQLException {
         String sql = "UPDATE solution SET created=?, updated=?, description=? WHERE id=?;";
         PreparedStatement ps = con.prepareStatement(sql);
-        ps.setString(1, this.getCreated());
-        ps.setString(2, this.getUpdated());
+        ps.setDate(1, this.getCreated());
+        ps.setDate(2, this.getUpdated());
         ps.setString(3, this.getDescription());
         ps.setInt(4, this.getId());
         ps.executeUpdate();
@@ -96,19 +97,19 @@ public class Solution {
         return id;
     }
 
-    public String getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(String created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 
-    public String getUpdated() {
+    public Date getUpdated() {
         return updated;
     }
 
-    public void setUpdated(String updated) {
+    public void setUpdated(Date updated) {
         this.updated = updated;
     }
 
