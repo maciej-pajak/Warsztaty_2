@@ -9,30 +9,33 @@ import programming_school.User;
 
 public class UserAdmin {
     
+    private static String MENU_OPTIONS = 
+            "\nenter one of the following commands:\n" +
+            " add \t- to add new user\n" +
+            " edit \t- to edit existing user\n" +
+            " delete \t- to remove user\n" +
+            " quit \t- to exit program\n>> ";
+    
     private static User[] users;
     
     /**
-     * Simple administration program, which allows to add, edit or delete users from database.
+     * Simple administration program, which allows to add, edit or delete groups from database.
      * @param args
      */
     public static void main(String[] args) {
-        
-        try ( Connection  con = DriverManager.getConnection("jdbc:mysql://localhost/mydb?useSSL=false", "root", "coderslab") ) {
+        System.out.println("UserAdmin ver. 0.1");
+        try ( Connection  con = DriverManager.getConnection("jdbc:mysql://localhost/mydb?useSSL=false", "root", "coderslab") ) {        // TODO edit database name
             
             Scanner scan = new Scanner(System.in);
             boolean loop = true;
             while (loop) {
                 users = User.loadAll(con);
-                System.out.println("Users in database:");                       // print all
+                System.out.println("\nUsers in database:");
+                System.out.printf("%-4s %-4s %-20s %s\n", "ID", "Group", "Username", "Email");
                 for (User u : users) {
-                    System.out.println(u.toString());       // TODO fix printing in User class
+                    System.out.println(u.toString());
                 }
-                System.out.println("\nenter one of the following commands:"); // TODO add message
-                System.out.println(" add \t- to add new user");
-                System.out.println(" edit \t- to edit existing user");
-                System.out.println(" delete \t- to remove user");
-                System.out.println(" quit \t- to exit program");
-                System.out.print(">> ");
+                System.out.print(MENU_OPTIONS);
                 switch ( scan.nextLine() ) {
                 case "add":
                     add(con, scan);
@@ -64,14 +67,21 @@ public class UserAdmin {
      * @throws SQLException
      */
     private static void add(Connection con, Scanner scan) throws SQLException {
-        System.out.println("enter user details:");
+        System.out.println("\nenter user details:");
         System.out.print(" * username:\t");
         String username = scan.nextLine();
         System.out.print(" * email:\t");
         String email = scan.nextLine();
         System.out.print(" * password:\t");     // TODO mask password input
-        String password = scan.nextLine();       
-        User user = new User(username, email, password);
+        String password = scan.nextLine();
+        System.out.print(" * group id:\t");
+        int gid;
+        while ( !scan.hasNextInt() ) {
+            System.out.println(scan.next() + " is not a number");
+        }
+        gid = scan.nextInt();
+        scan.nextLine();
+        User user = new User(username, email, password, gid);
         user.saveToDb(con);
     }
     
@@ -85,10 +95,10 @@ public class UserAdmin {
         if ( users.length < 1 ) {
             System.out.println("there is no user to edit, add user first");
         } else {
-            System.out.print("enter id of user you want to edit: ");
-            User res = getById(con, scan);                          // TODO add message if there is nothing to edit
+            System.out.print("\nenter id of user you want to edit: ");
+            User res = getById(con, scan);
+
             System.out.println("editing user with id = " + res.getId());
-            // TODO add print current
             System.out.print(" * enter new username: ");
             res.setUsername(scan.nextLine());
             System.out.print(" * enter new email: ");
@@ -96,6 +106,7 @@ public class UserAdmin {
             System.out.print(" * enter new password: ");         // TODO mask
             res.setPassword(scan.nextLine());
             res.saveToDb(con);
+
         }
     }
     
@@ -105,9 +116,14 @@ public class UserAdmin {
      * @param scan
      * @throws SQLException
      */
-    private static void delete(Connection con, Scanner scan) throws SQLException {
+    private static void delete(Connection con, Scanner scan) {
         System.out.print("enter id of user you want to delete: ");
-        getById(con, scan).delete(con);
+        try {
+            getById(con, scan).delete(con);
+        } catch (SQLException e) {
+            System.out.print("Error:\t");
+            System.out.println(e.getMessage());
+        }
     }
     
     /**

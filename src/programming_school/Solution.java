@@ -52,7 +52,7 @@ public class Solution {
     
     public static Solution[] loadAllByExerciseId(Connection con, int id) throws SQLException {
         List<Solution> solutionList = new ArrayList<Solution>();
-        final String sql = "SELECT * FROM solution JOIN exercise ON solution.id=exercise.soultion_id WHERE exercise.id=?";
+        final String sql = "SELECT * FROM solution JOIN exercise ON solution.id=exercise.soultion_id WHERE exercise.id=?;";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();

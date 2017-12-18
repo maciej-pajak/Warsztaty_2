@@ -58,7 +58,7 @@ public class Group {
     
     private void saveNewToDb(Connection con) throws SQLException {
         String sql = "INSERT INTO user_group VALUES(null, ?);";
-        String[] genereatedColumns = { "id" }; // TODO rethink
+        String[] genereatedColumns = { "id" };
         PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
         ps.setString(1, this.getName());
         ps.executeUpdate();
@@ -78,7 +78,7 @@ public class Group {
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
-            String sql = "DELETE FROM group_user WHERE id=?;";
+            String sql = "DELETE FROM user_group WHERE id=?;";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setInt(1, this.id);
             ps.executeUpdate();
@@ -99,10 +99,8 @@ public class Group {
     }
     
     @Override
-    public String toString() { // TODO improve ?
-        StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append('\t').append(getId());
-        return sb.toString();
+    public String toString() {
+        return String.format("%-4s %s", getId(), getName());
     }
     
 }

@@ -11,18 +11,19 @@ public class Exercise {
     
     private int id;
     private String title;
+    private String description;
     private int user_id;
     private int solution_id;
     
-    // constructors
-    public Exercise(String title, int user_id, int solution_id) {
-        this(0, title, user_id, solution_id);
+    public Exercise(String title, String description, int user_id, int solution_id) {
+        this(0, title, description, user_id, solution_id);
     }
     
-    private Exercise(int id, String title, int user_id, int solution_id) {  
-        setTitle(title);            // TODO use public Exercise(..)
-        setUser_id(user_id);
-        setSolution_id(solution_id);
+    private Exercise(int id, String title, String description, int user_id, int solution_id) {  
+        setTitle(title);
+        setUserId(user_id);
+        setDescription(description);
+        setSolutionId(solution_id);
         this.id = id;
     }
 
@@ -32,7 +33,7 @@ public class Exercise {
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         if ( rs.next() ) {
-            return new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id"));
+            return getFromResultSet(rs);
         }
         return null;
     }
@@ -42,7 +43,7 @@ public class Exercise {
         final String sql = "SELECT * FROM exercise";
         ResultSet rs = con.prepareStatement(sql).executeQuery();
         while ( rs.next() ) {
-            exerciseList.add(new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id")) );
+            exerciseList.add(getFromResultSet(rs));
         }
         return exerciseList.toArray(new Exercise[exerciseList.size()]);
     }
@@ -54,9 +55,13 @@ public class Exercise {
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         while ( rs.next() ) {
-            exerciseList.add(new Exercise(rs.getInt("id"), rs.getString("title"), rs.getInt("user_id"), rs.getInt("solution_id")) );
+            exerciseList.add(getFromResultSet(rs));
         }
         return exerciseList.toArray(new Exercise[exerciseList.size()]);
+    }
+    
+    private static Exercise getFromResultSet(ResultSet rs) throws SQLException {
+        return new Exercise(rs.getInt("id"), rs.getString("title"), rs.getString("description"), rs.getInt("user_id"), rs.getInt("solution_id"));
     }
     
     public void saveToDb(Connection con) throws SQLException {
@@ -68,12 +73,13 @@ public class Exercise {
     }
     
     private void saveNewToDb(Connection con) throws SQLException {
-        String sql = "INSERT INTO exercise VALUES(null, ?, ?, ?);";
-        String[] genereatedColumns = { "id" }; // TODO rethink
+        String sql = "INSERT INTO exercise VALUES(null, ?, ?, ?, ?);";
+        String[] genereatedColumns = { "id" };
         PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
         ps.setString(1, this.getTitle());
-        ps.setInt(2, this.getUser_id());
-        ps.setInt(3, this.getSolution_id());
+        ps.setString(2, this.getDescription());
+        ps.setInt(3, this.getUserId());
+        ps.setInt(4, this.getSolutionId());
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
         if ( rs.next() ) {
@@ -82,12 +88,13 @@ public class Exercise {
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-        String sql = "UPDATE exercise SET title=?, user_id=?, solution_id=? WHERE id=?;";
+        String sql = "UPDATE exercise SET title=?, description=?, user_id=?, solution_id=? WHERE id=?;";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, this.getTitle());
-        ps.setInt(2, this.getUser_id());
-        ps.setInt(3, this.getSolution_id());
-        ps.setInt(4, this.getId());
+        ps.setString(2, this.getDescription());
+        ps.setInt(3, this.getUserId());
+        ps.setInt(4, this.getSolutionId());
+        ps.setInt(5, this.getId());
         ps.executeUpdate();
     }
     
@@ -103,9 +110,7 @@ public class Exercise {
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(title).append('\t').append(user_id).append('\t').append(solution_id);
-        return sb.toString();
+        return String.format("%-4s %-4s %-8s %-20s %s", getId(), getUserId(), getSolutionId(), getTitle(), getDescription());
     }
     
     public String getTitle() {
@@ -115,20 +120,28 @@ public class Exercise {
     public void setTitle(String title) {
         this.title = title;
     }
+    
+    public String getDescription() {
+        return description;
+    }
 
-    public int getUser_id() {
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getUserId() {
         return user_id;
     }
 
-    public void setUser_id(int user_id) {
+    public void setUserId(int user_id) {
         this.user_id = user_id;
     }
 
-    public int getSolution_id() {
+    public int getSolutionId() {
         return solution_id;
     }
 
-    public void setSolution_id(int solution_id) {
+    public void setSolutionId(int solution_id) {
         this.solution_id = solution_id;
     }
 

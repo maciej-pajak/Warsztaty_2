@@ -15,21 +15,21 @@ public class User {
     private String username;
     private String email;
     private String password;
+    private int group_id;
     
-    // create new
-    public User(String username, String email, String password) {
-        this(0, username, email, password);
+    public User(String username, String email, String password, int group_id) {
+        this(0, username, email, password, group_id);
     }
     
-    
-    private User(int id, String username, String email, String password) {
+    private User(int id, String username, String email, String password, int group_id) {
         setUsername(username);
         setEmail(email);
         this.id = id;
+        setGroupId(group_id);
         if ( id == 0 ) {
             setPassword(password);
         } else {
-            this.password = password;   // TODO check
+            this.password = password;
         }
     }
     
@@ -64,6 +64,15 @@ public class User {
         return this;
     }
     
+    public int getGroupId() {
+        return group_id;
+    }
+    
+    public User setGroupId(int group_id) {
+        this.group_id = group_id;
+        return this;
+    }
+    
     public void saveToDb(Connection con) throws SQLException {
         if ( this.id == 0 ) {   // create new
             saveNewToDb(con);
@@ -73,12 +82,13 @@ public class User {
     }
     
     private void saveNewToDb(Connection con) throws SQLException {
-        String sql = "INSERT INTO user VALUES(null, ?, ?, ?);";
-        String[] genereatedColumns = { "id" }; // TODO rethink
+        String sql = "INSERT INTO user VALUES(null, ?, ?, ?, ?);";
+        String[] genereatedColumns = { "id" };
         PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
         ps.setString(1, this.getUsername());
         ps.setString(2, this.getEmail());
         ps.setString(3, this.getPassword());
+        ps.setInt(4, this.getGroupId());
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
         if ( rs.next() ) {
@@ -87,12 +97,13 @@ public class User {
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-       String sql = "UPDATE user SET username=?, email=?, password=? WHERE id=?;";
+       String sql = "UPDATE user SET username=?, email=?, password=? user_group_id=? WHERE id=?;";
        PreparedStatement ps = con.prepareStatement(sql);
        ps.setString(1, this.getUsername());
        ps.setString(2, this.getEmail());
        ps.setString(3, this.getPassword());
-       ps.setInt(4, this.getId());
+       ps.setInt(4, this.getGroupId());
+       ps.setInt(5, this.getId());
        ps.executeUpdate();
     }
     
@@ -112,7 +123,7 @@ public class User {
         ResultSet rs = con.prepareStatement(sql).executeQuery();
         
         while ( rs.next() ) {
-            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password")));
+            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id")));
         }
        
         return usersList.toArray(new User[usersList.size()]);
@@ -125,7 +136,7 @@ public class User {
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            return new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"));
+            return new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id"));
         }
         return null;
     }
@@ -138,17 +149,15 @@ public class User {
         ResultSet rs = ps.executeQuery();
         
         while ( rs.next() ) {
-            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password")));
+            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id")));
         }
        
         return usersList.toArray(new User[usersList.size()]);
     }
     
     @Override
-    public String toString() {      // TODO improve?
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getUsername()).append('\t').append(this.getEmail());
-        return sb.toString();
+    public String toString() { 
+        return String.format( "%-4s %-4s %-20s %s", getId(), getGroupId(), getUsername(), getEmail() );
     }
 
 }
