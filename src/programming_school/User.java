@@ -81,10 +81,13 @@ public class User {
         }
     }
     
+    private static final String CREATE_USER_QUERY = "INSERT INTO user VALUES(null, ?, ?, ?, ?);";
+    private static final String UPDATE_USER_QUERY = "UPDATE user SET username=?, email=?, password=? user_group_id=? WHERE id=?;";
+    private static final String DELETE_USER_QUERY = "DELETE FROM user WHERE id=?;";
+    // TODO finish queries
     private void saveNewToDb(Connection con) throws SQLException {
-        String sql = "INSERT INTO user VALUES(null, ?, ?, ?, ?);";
         String[] genereatedColumns = { "id" };
-        PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
+        PreparedStatement ps = con.prepareStatement(CREATE_USER_QUERY, genereatedColumns);
         ps.setString(1, this.getUsername());
         ps.setString(2, this.getEmail());
         ps.setString(3, this.getPassword());
@@ -97,26 +100,24 @@ public class User {
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-       String sql = "UPDATE user SET username=?, email=?, password=? user_group_id=? WHERE id=?;";
-       PreparedStatement ps = con.prepareStatement(sql);
+       PreparedStatement ps = con.prepareStatement(UPDATE_USER_QUERY);
        ps.setString(1, this.getUsername());
        ps.setString(2, this.getEmail());
        ps.setString(3, this.getPassword());
        ps.setInt(4, this.getGroupId());
        ps.setInt(5, this.getId());
        ps.executeUpdate();
-    }
+    }  
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
-            String sql = "DELETE FROM user WHERE id=?;";
-            PreparedStatement ps = con.prepareStatement(sql);
+            PreparedStatement ps = con.prepareStatement(DELETE_USER_QUERY);
             ps.setInt(1, this.id);
             ps.executeUpdate();
             this.id = 0;
         }
     }
-    
+    // TODO add constructor form ResultSet
     public static User[] loadAll(Connection con) throws SQLException {
         List<User> usersList = new ArrayList<User>();
         String sql = "SELECT * FROM user;";

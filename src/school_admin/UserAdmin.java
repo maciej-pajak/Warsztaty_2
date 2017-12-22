@@ -1,7 +1,6 @@
 package school_admin;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -24,17 +23,12 @@ public class UserAdmin {
      */
     public static void main(String[] args) {
         System.out.println("UserAdmin ver. 0.1");
-        try ( Connection  con = DriverManager.getConnection("jdbc:mysql://localhost/mydb?useSSL=false", "root", "coderslab") ) {        // TODO edit database name
+        try ( Connection  con = DbUtils.getConnection() ) {
             
             Scanner scan = new Scanner(System.in);
             boolean loop = true;
             while (loop) {
-                users = User.loadAll(con);
-                System.out.println("\nUsers in database:");
-                System.out.printf("%-4s %-4s %-20s %s\n", "ID", "Group", "Username", "Email");
-                for (User u : users) {
-                    System.out.println(u.toString());
-                }
+                users = loadUsers(con);
                 System.out.print(MENU_OPTIONS);
                 switch ( scan.nextLine() ) {
                 case "add":
@@ -97,16 +91,16 @@ public class UserAdmin {
         } else {
             System.out.print("\nenter id of user you want to edit: ");
             User res = getById(con, scan);
-
-            System.out.println("editing user with id = " + res.getId());
-            System.out.print(" * enter new username: ");
-            res.setUsername(scan.nextLine());
-            System.out.print(" * enter new email: ");
-            res.setEmail(scan.nextLine());
-            System.out.print(" * enter new password: ");         // TODO mask
-            res.setPassword(scan.nextLine());
-            res.saveToDb(con);
-
+            if ( res != null) {
+                System.out.println("editing user with id = " + res.getId());
+                System.out.print(" * enter new username: ");
+                res.setUsername(scan.nextLine());
+                System.out.print(" * enter new email: ");
+                res.setEmail(scan.nextLine());
+                System.out.print(" * enter new password: ");         // TODO mask
+                res.setPassword(scan.nextLine());
+                res.saveToDb(con);
+            }
         }
     }
     
@@ -133,11 +127,15 @@ public class UserAdmin {
      * @return {@code User} with id read from console input
      * @throws SQLException
      */
-    private static User getById(Connection con, Scanner scan) throws SQLException {
+    public static User getById(Connection con, Scanner scan) throws SQLException {
         User res = null;
         while (true) {
             while ( !scan.hasNextInt() ) {
-                System.out.println( scan.next() + " is not a valid number");
+                String tmp = scan.next();
+                if (tmp.equals("x")) {
+                    return null;
+                }
+                System.out.println( tmp + " is not a valid number, try again (or 'x' to exit)");
             }
             res = User.loadById( con, scan.nextInt() );
             scan.nextLine();
@@ -148,5 +146,15 @@ public class UserAdmin {
             }
         }
         return res;
+    }
+    
+    protected static User[] loadUsers(Connection con) throws SQLException {
+        User[] users = User.loadAll(con);
+        System.out.println("\nUsers in database:");
+        System.out.printf("%-4s %-4s %-20s %s\n", "ID", "Group", "Username", "Email");
+        for (User u : users) {
+            System.out.println(u.toString());
+        }
+        return users;
     }
 }

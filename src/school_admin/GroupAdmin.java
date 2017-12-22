@@ -1,7 +1,6 @@
 package school_admin;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -24,7 +23,7 @@ public class GroupAdmin {
      */
     public static void main(String[] args) {
         System.out.println("GroupAdmin ver. 0.1");
-        try ( Connection  con = DriverManager.getConnection("jdbc:mysql://localhost/mydb?useSSL=false", "root", "coderslab") ) {        // TODO edit database name
+        try ( Connection  con = DbUtils.getConnection() ) {
             
             Scanner scan = new Scanner(System.in);
             boolean loop = true;

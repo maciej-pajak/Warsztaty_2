@@ -1,7 +1,6 @@
 package school_admin;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -24,17 +23,12 @@ public class ExerciseAdmin {
      */
     public static void main(String[] args) {
         System.out.println("ExerciseAdmin ver. 0.1");
-        try ( Connection  con = DriverManager.getConnection("jdbc:mysql://localhost/coding_school?useSSL=false", "root", "coderslab") ) {        // TODO edit database name
+        try ( Connection  con = DbUtils.getConnection() ) {
             
             Scanner scan = new Scanner(System.in);
             boolean loop = true;
             while (loop) {
                 exercises = Exercise.loadAll(con);
-                System.out.println("\nExercises in database:");
-                System.out.printf("%-4s %-4s %-8s %-20s %s\n", "ID", "User", "Solution", "Title", "Description");
-                for (Exercise e : exercises) {
-                    System.out.println(e.toString());
-                }
                 System.out.print(MENU_OPTIONS);
                 try {
                     switch (scan.nextLine()) {
@@ -56,6 +50,7 @@ public class ExerciseAdmin {
                 } catch (SQLException e) {
                     System.out.print("Error:\t");
                     System.out.println(e.getMessage());
+                    e.printStackTrace();
                 }
             }
             
@@ -71,18 +66,11 @@ public class ExerciseAdmin {
      * @param scan
      * @throws SQLException
      */
-    private static void add(Connection con, Scanner scan) throws SQLException {
-        System.out.println("\nenter exercise details:");
-        System.out.print(" * title:\t");
+    private static void add(Connection con, Scanner scan) throws SQLException { 
+        System.out.print("\nenter title: ");
         String title = scan.nextLine();
-        System.out.print(" * description:\t");
-        String description = scan.nextLine();
-        System.out.print(" * user id:\t");
-        int userId = getIntFromScanner(scan);
-        System.out.print(" * solution id:\t");
-        int solutionId = getIntFromScanner(scan);
-        Exercise user = new Exercise(title, description, userId, solutionId);
-        user.saveToDb(con);
+        Exercise exerc = new Exercise(title, createDescription(scan));
+        exerc.saveToDb(con);
     }
     
     /**
@@ -97,19 +85,30 @@ public class ExerciseAdmin {
         } else {
             System.out.print("\nenter id of exercise you want to edit: ");
             Exercise res = getById(con, scan);
-
+            
             System.out.println("editing exercise with id = " + res.getId());
-            System.out.print(" * enter new title:\t");
-            res.setTitle(scan.nextLine());
-            System.out.print(" * enter new description:\t");
-            res.setDescription(scan.nextLine());
-            System.out.print(" * enter new user id:\t");
-            res.setUserId(getIntFromScanner(scan));
-            System.out.print(" * enter new solution id:\t");
-            res.setSolutionId(getIntFromScanner(scan));
+            
+            System.out.println("\nenter new title");
+            String title = scan.nextLine();
+
+            res.setDescription(createDescription(scan));
+            res.setTitle(title);
             res.saveToDb(con);
 
         }
+    }
+    
+    private static String createDescription(Scanner scan) {
+        System.out.println("\nenter desciption (type 'quit' in new line to exit):");
+        StringBuilder sb = new StringBuilder();
+        while (true) {
+            String line = scan.nextLine();
+            if (line.equals("quit")) {
+                break;
+            }
+            sb.append(line).append("\n");
+        }
+        return sb.toString();
     }
     
     /**
@@ -130,7 +129,7 @@ public class ExerciseAdmin {
      * @return {@code Exercise} with id read from console input
      * @throws SQLException
      */
-    private static Exercise getById(Connection con, Scanner scan) throws SQLException {
+    public static Exercise getById(Connection con, Scanner scan) throws SQLException {
         Exercise res = null;
         while (true) {
             while ( !scan.hasNextInt() ) {
@@ -146,17 +145,27 @@ public class ExerciseAdmin {
         }
         return res;
     }
-    
-    /**
-     * asks for user input until integer is read
-     * @return
-     */
-    private static int getIntFromScanner(Scanner scan) {
-        while ( !scan.hasNextInt() ) {
-            System.out.println(scan.next() + " is not an integer, try again: ");
+//    // TODO remove
+//    /**
+//     * asks for user input until integer is read
+//     * @return
+//     */
+//    private static int getIntFromScanner(Scanner scan) {
+//        while ( !scan.hasNextInt() ) {
+//            System.out.println(scan.next() + " is not an integer, try again: ");
+//        }
+//        int res = scan.nextInt();
+//        scan.nextLine();
+//        return res;
+//    }
+    // TODO comment
+    protected static Exercise[] loadExercises(Connection con) throws SQLException {
+        Exercise[] exercises = Exercise.loadAll(con);
+        System.out.println("\nExercises in database:");
+        System.out.printf("%-4s %-10s %-10s %s\n", "ID", "Created", "Updated", "Description");  // TODO
+        for (Exercise e : exercises) {
+            System.out.println(e.toString());
         }
-        int res = scan.nextInt();
-        scan.nextLine();
-        return res;
+        return exercises;
     }
 }
