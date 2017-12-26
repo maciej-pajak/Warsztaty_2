@@ -162,7 +162,7 @@ public class Solution {
     
     @Override
     public String toString() {
-        return String.format("%-2s %-2s %-2s %-20s %-20s %s", getId(), getUserId(), getExerciseId(), getCreated(), getUpdated(), getDescription()); // FIXME
+        return String.format("%-2s %-2s %-2s %-20s %-20s %s", getId(), getUserId(), getExerciseId(), getCreated(), getUpdated(), getDescription());
     }
     
     public String getCreated() {

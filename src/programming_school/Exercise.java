@@ -131,7 +131,9 @@ public class Exercise {
     
     @Override
     public String toString() {
-        return this.id + " " + this.title + " " + this.description;  // TODO improve
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(this.id).append(", ").append(this.title).append(", ").append(this.description).append("]");
+        return sb.toString();
     }
     
 

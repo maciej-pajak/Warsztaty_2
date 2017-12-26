@@ -11,6 +11,13 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class User {
     
+    private static final String CREATE_USER_QUERY = "INSERT INTO user VALUES(null, ?, ?, ?, ?);";
+    private static final String UPDATE_USER_QUERY = "UPDATE user SET username=?, email=?, password=? user_group_id=? WHERE id=?;";
+    private static final String DELETE_USER_QUERY = "DELETE FROM user WHERE id=?;";
+    private static final String LOAD_ALL_QUERY = "SELECT * FROM user;";
+    private static final String LOAD_BY_GROUP_ID_QUERY = "SELECT * FROM user WHERE user_group_id=?;";
+    private static final String LOAD_BY_ID_QUERY = "SELECT * FROM user WHERE id=?;";
+    
     private int id = 0;
     private String username;
     private String email;
@@ -31,6 +38,10 @@ public class User {
         } else {
             this.password = password;
         }
+    }
+    
+    private User(ResultSet rs) throws SQLException {
+        this( rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id") );
     }
     
     public int getId() {
@@ -81,10 +92,6 @@ public class User {
         }
     }
     
-    private static final String CREATE_USER_QUERY = "INSERT INTO user VALUES(null, ?, ?, ?, ?);";
-    private static final String UPDATE_USER_QUERY = "UPDATE user SET username=?, email=?, password=? user_group_id=? WHERE id=?;";
-    private static final String DELETE_USER_QUERY = "DELETE FROM user WHERE id=?;";
-    // TODO finish queries
     private void saveNewToDb(Connection con) throws SQLException {
         String[] genereatedColumns = { "id" };
         PreparedStatement ps = con.prepareStatement(CREATE_USER_QUERY, genereatedColumns);
@@ -117,40 +124,37 @@ public class User {
             this.id = 0;
         }
     }
-    // TODO add constructor form ResultSet
+    
     public static User[] loadAll(Connection con) throws SQLException {
         List<User> usersList = new ArrayList<User>();
-        String sql = "SELECT * FROM user;";
-        ResultSet rs = con.prepareStatement(sql).executeQuery();
+        ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery();
         
         while ( rs.next() ) {
-            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id")));
+            usersList.add(new User(rs));
         }
        
         return usersList.toArray(new User[usersList.size()]);
     }
     
     public static User loadById(Connection con, int id) throws SQLException {
-        String sql = "SELECT * FROM user WHERE id=?;";
-        PreparedStatement ps = con.prepareStatement(sql);
+        PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            return new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id"));
+            return new User(rs);
         }
         return null;
     }
     
     public static User[] loadAllByGroupId(Connection con, int id) throws SQLException {
         List<User> usersList = new ArrayList<User>();
-        String sql = "SELECT * FROM user WHERE user_group_id=?;";
-        PreparedStatement ps = con.prepareStatement(sql);
+        PreparedStatement ps = con.prepareStatement(LOAD_BY_GROUP_ID_QUERY);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         
         while ( rs.next() ) {
-            usersList.add(new User(rs.getInt("id"), rs.getString("username"), rs.getString("email"), rs.getString("password"), rs.getInt("user_group_id")));
+            usersList.add(new User(rs));
         }
        
         return usersList.toArray(new User[usersList.size()]);
@@ -158,7 +162,7 @@ public class User {
     
     @Override
     public String toString() { 
-        return String.format( "%-4s %-4s %-20s %s", getId(), getGroupId(), getUsername(), getEmail() );
+        return String.format( "[%d, %d, %s, %s]", getId(), getGroupId(), getUsername(), getEmail() );
     }
 
 }

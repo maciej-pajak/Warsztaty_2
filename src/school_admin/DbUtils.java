@@ -12,7 +12,7 @@ public class DbUtils {
     
     public static Connection getConnection() throws SQLException {
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();   // FIXME
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception e) {
             
         }

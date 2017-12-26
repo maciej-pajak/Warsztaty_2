@@ -9,6 +9,12 @@ import java.util.List;
 
 public class Group {
     
+    private static final String LOAD_ALL_QUERY = "SELECT * FROM user_group;";
+    private static final String LOAD_BY_ID_QUERY = "SELECT * FROM user_group WHERE id=?;";
+    private static final String CREATE_QUERY = "INSERT INTO user_group VALUES(null, ?);";
+    private static final String UPDATE_QUERY = "UPDATE user_group SET name=? WHERE id=?;";
+    private static final String DELETE_QUERY = "DELETE FROM user_group WHERE id=?;";
+    
     private int id;
     private String name;
     
@@ -22,28 +28,28 @@ public class Group {
         this.id = id;
     }
     
+    private Group(ResultSet rs) throws SQLException {
+        this(rs.getInt("id"), rs.getString("name"));
+    }
+    
     public static Group[] loadAll(Connection con) throws SQLException {
         List<Group> groupList = new ArrayList<Group>();
-        String sql = "SELECT * FROM user_group;";
-        ResultSet rs = con.prepareStatement(sql).executeQuery();
+        ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery();
         
         while ( rs.next() ) {
-            groupList.add( new Group(rs.getInt("id"), rs.getString("name")) );
+            groupList.add( new Group(rs) );
         }
        
         return groupList.toArray(new Group[groupList.size()]);
     }
     
     public static Group loadById(Connection con, int id) throws SQLException {
-        String sql = "SELECT * FROM user_group WHERE id=?;";
-        PreparedStatement ps = con.prepareStatement(sql);
+        PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         
         if ( rs.next() ) {
-            Group gr = new Group(rs.getString("name"));
-            gr.id = rs.getInt("id");
-            return gr;
+            return new Group(rs);
         }
         return null;
     }
@@ -57,9 +63,8 @@ public class Group {
     }
     
     private void saveNewToDb(Connection con) throws SQLException {
-        String sql = "INSERT INTO user_group VALUES(null, ?);";
         String[] genereatedColumns = { "id" };
-        PreparedStatement ps = con.prepareStatement(sql, genereatedColumns);
+        PreparedStatement ps = con.prepareStatement(CREATE_QUERY, genereatedColumns);
         ps.setString(1, this.getName());
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
@@ -69,8 +74,7 @@ public class Group {
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-        String sql = "UPDATE user_group SET name=? WHERE id=?;";
-        PreparedStatement ps = con.prepareStatement(sql);
+        PreparedStatement ps = con.prepareStatement(UPDATE_QUERY);
         ps.setString(1, this.getName());
         ps.setInt(2, this.getId());
         ps.executeUpdate();
@@ -78,8 +82,7 @@ public class Group {
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
-            String sql = "DELETE FROM user_group WHERE id=?;";
-            PreparedStatement ps = con.prepareStatement(sql);
+            PreparedStatement ps = con.prepareStatement(DELETE_QUERY);
             ps.setInt(1, this.id);
             ps.executeUpdate();
             this.id = 0;
@@ -100,7 +103,7 @@ public class Group {
     
     @Override
     public String toString() {
-        return String.format("%-4s %s", getId(), getName());
+        return String.format("[%s, %s]", getId(), getName());
     }
     
 }
