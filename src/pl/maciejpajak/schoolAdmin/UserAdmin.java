@@ -1,14 +1,15 @@
-package school_admin;
+package pl.maciejpajak.schoolAdmin;
 
+import java.io.Console;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import programming_school.User;
+import pl.maciejpajak.codingSchool.User;
 
 public class UserAdmin {
     
-    private static String MENU_OPTIONS = 
+    private static final String MENU_OPTIONS = 
             "\nenter one of the following commands:\n" +
             " add \t- to add new user\n" +
             " edit \t- to edit existing user\n" +
@@ -66,8 +67,8 @@ public class UserAdmin {
         String username = scan.nextLine();
         System.out.print(" * email:\t");
         String email = scan.nextLine();
-        System.out.print(" * password:\t");     // TODO mask password input
-        String password = scan.nextLine();
+        System.out.print(" * password:\t");
+        String password = getPasswordFromInput(scan);
         System.out.print(" * group id:\t");
         int gid;
         while ( !scan.hasNextInt() ) {
@@ -97,8 +98,8 @@ public class UserAdmin {
                 res.setUsername(scan.nextLine());
                 System.out.print(" * enter new email: ");
                 res.setEmail(scan.nextLine());
-                System.out.print(" * enter new password: ");         // TODO mask
-                res.setPassword(scan.nextLine());
+                System.out.print(" * enter new password: ");
+                res.setPassword(getPasswordFromInput(scan));
                 res.saveToDb(con);
             }
         }
@@ -146,6 +147,17 @@ public class UserAdmin {
             }
         }
         return res;
+    }
+    
+    private static String getPasswordFromInput(Scanner scan) {
+        Console console = System.console();
+        if (console != null) {
+            return String.valueOf(console.readPassword());
+        } else {
+            System.out.println("could not initialize safe input, enter password in disclosed manner: ");
+            return scan.nextLine();
+        }
+        
     }
     
     protected static User[] loadUsers(Connection con) throws SQLException {

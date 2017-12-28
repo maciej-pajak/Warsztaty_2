@@ -1,14 +1,14 @@
-package school_admin;
+package pl.maciejpajak.schoolAdmin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import programming_school.Exercise;
+import pl.maciejpajak.codingSchool.Exercise;
 
 public class ExerciseAdmin {
     
-    private static String MENU_OPTIONS = 
+    private static final String MENU_OPTIONS = 
             "\nenter one of the following commands:\n" +
             " add \t- to add new exercise\n" +
             " edit \t- to edit existing exercise\n" +
@@ -145,20 +145,7 @@ public class ExerciseAdmin {
         }
         return res;
     }
-//    // TODO remove
-//    /**
-//     * asks for user input until integer is read
-//     * @return
-//     */
-//    private static int getIntFromScanner(Scanner scan) {
-//        while ( !scan.hasNextInt() ) {
-//            System.out.println(scan.next() + " is not an integer, try again: ");
-//        }
-//        int res = scan.nextInt();
-//        scan.nextLine();
-//        return res;
-//    }
-    // TODO comment
+
     protected static Exercise[] loadExercises(Connection con) throws SQLException {
         Exercise[] exercises = Exercise.loadAll(con);
         System.out.println("\nExercises in database:");

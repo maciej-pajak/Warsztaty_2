@@ -1,4 +1,4 @@
-package programming_school;
+package pl.maciejpajak.codingSchool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,8 +24,8 @@ public class Solution {
     private LocalDateTime created;
     private LocalDateTime updated;
     private String description;
-    private int user_id;
-    private int exercise_id;
+    private int userId;
+    private int exerciseId;
     
     public Solution(int user_id, int exercise_id) {
         this.id = 0;
@@ -47,53 +47,63 @@ public class Solution {
     }
 
     public static Solution loadById(Connection con, int id) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        if ( rs.next() ) {
-            return getFromResultSet(rs);
+        try (PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY)) {
+            ps.setInt(1, id);
+            try ( ResultSet rs = ps.executeQuery() ) {
+                if ( rs.next() ) {
+                    return getFromResultSet(rs);
+                }
+            }
         }
         return null;
     }
     
     public static Solution[] loadAll(Connection con) throws SQLException {
         List<Solution> exerciseList = new ArrayList<Solution>();
-        ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery();
-        while ( rs.next() ) {
-            exerciseList.add(getFromResultSet(rs));
+        try ( ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery() ) {
+            while ( rs.next() ) {
+                exerciseList.add(getFromResultSet(rs));
+            }
         }
         return exerciseList.toArray(new Solution[exerciseList.size()]);
     }
     
     public static Solution[] loadAllByUserId(Connection con, int id) throws SQLException {
         List<Solution> exerciseList = new ArrayList<Solution>();
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_USER_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        while ( rs.next() ) {
-            exerciseList.add(getFromResultSet(rs));
+        
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_BY_USER_ID_QUERY) ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while ( rs.next() ) {
+                exerciseList.add(getFromResultSet(rs));
+            }
+            rs.close();
         }
         return exerciseList.toArray(new Solution[exerciseList.size()]);
     }
     
     public static Solution[] loadUnsolvedByUserId(Connection con, int id) throws SQLException {
         List<Solution> exerciseList = new ArrayList<Solution>();
-        PreparedStatement ps = con.prepareStatement(LOAD_UNSOLVED_BY_USER_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        while ( rs.next() ) {
-            exerciseList.add(getFromResultSet(rs));
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_UNSOLVED_BY_USER_ID_QUERY) ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while ( rs.next() ) {
+                exerciseList.add(getFromResultSet(rs));
+            }
+            rs.close();
         }
         return exerciseList.toArray(new Solution[exerciseList.size()]);
     }
 
     public static Solution[] loadAllByExerciseId(Connection con, int id) throws SQLException {
         List<Solution> exerciseList = new ArrayList<Solution>();
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_EXERCISE_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        while ( rs.next() ) {
-            exerciseList.add(getFromResultSet(rs));
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_BY_EXERCISE_ID_QUERY) ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while ( rs.next() ) {
+                exerciseList.add(getFromResultSet(rs));
+            }
+            rs.close();
         }
         return exerciseList.toArray(new Solution[exerciseList.size()]);
     }
@@ -112,33 +122,37 @@ public class Solution {
     
     private void saveNewToDb(Connection con) throws SQLException {
         String[] genereatedColumns = { "id" };
-        PreparedStatement ps = con.prepareStatement(CREATE_QUERY, genereatedColumns);
-        this.created = LocalDateTime.now();
-        ps.setString(1, this.getCreated());
-        ps.setInt(2, this.getUserId());
-        ps.setInt(3, this.getExerciseId());
-        ps.executeUpdate();
-        ResultSet rs = ps.getGeneratedKeys();
-        if ( rs.next() ) {
-            this.id = rs.getInt(1);
-        }    
+        try ( PreparedStatement ps = con.prepareStatement(CREATE_QUERY, genereatedColumns) ) {
+            this.created = LocalDateTime.now();
+            ps.setString(1, this.getCreated());
+            ps.setInt(2, this.getUserId());
+            ps.setInt(3, this.getExerciseId());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if ( rs.next() ) {
+                this.id = rs.getInt(1);
+            }
+            rs.close();
+        }
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(UPDATE_QUERY);
-        this.updated = LocalDateTime.now();
-        ps.setString(1, this.getUpdated());
-        ps.setString(2, this.getDescription());
-        ps.setInt(3, this.getId());
-        ps.executeUpdate();
+        try ( PreparedStatement ps = con.prepareStatement(UPDATE_QUERY) ) {
+            this.updated = LocalDateTime.now();
+            ps.setString(1, this.getUpdated());
+            ps.setString(2, this.getDescription());
+            ps.setInt(3, this.getId());
+            ps.executeUpdate();
+        }
     }
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
-            PreparedStatement ps = con.prepareStatement(DELETE_QUERY);
-            ps.setInt(1, this.id);
-            ps.executeUpdate();
-            this.id = 0;
+            try ( PreparedStatement ps = con.prepareStatement(DELETE_QUERY) ) {
+                ps.setInt(1, this.id);
+                ps.executeUpdate();
+                this.id = 0;
+            }
         }
     }
     
@@ -193,20 +207,20 @@ public class Solution {
     }
 
     public int getUserId() {
-        return user_id;
+        return userId;
     }
 
     public Solution setUserId(int user_id) {
-        this.user_id = user_id;
+        this.userId = user_id;
         return this;
     }
 
     public int getExerciseId() {
-        return exercise_id;
+        return exerciseId;
     }
 
     public Solution setExerciseId(int exercise_id) {
-        this.exercise_id = exercise_id;
+        this.exerciseId = exercise_id;
         return this;
     }
 

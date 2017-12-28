@@ -1,4 +1,4 @@
-package programming_school;
+package pl.maciejpajak.codingSchool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -94,69 +94,77 @@ public class User {
     
     private void saveNewToDb(Connection con) throws SQLException {
         String[] genereatedColumns = { "id" };
-        PreparedStatement ps = con.prepareStatement(CREATE_USER_QUERY, genereatedColumns);
-        ps.setString(1, this.getUsername());
-        ps.setString(2, this.getEmail());
-        ps.setString(3, this.getPassword());
-        ps.setInt(4, this.getGroupId());
-        ps.executeUpdate();
-        ResultSet rs = ps.getGeneratedKeys();
-        if ( rs.next() ) {
-            this.id = rs.getInt(1);
+        try ( PreparedStatement ps = con.prepareStatement(CREATE_USER_QUERY, genereatedColumns) ) {
+            ps.setString(1, this.getUsername());
+            ps.setString(2, this.getEmail());
+            ps.setString(3, this.getPassword());
+            ps.setInt(4, this.getGroupId());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if ( rs.next() ) {
+                this.id = rs.getInt(1);
+            }
+            rs.close();
         }
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-       PreparedStatement ps = con.prepareStatement(UPDATE_USER_QUERY);
-       ps.setString(1, this.getUsername());
-       ps.setString(2, this.getEmail());
-       ps.setString(3, this.getPassword());
-       ps.setInt(4, this.getGroupId());
-       ps.setInt(5, this.getId());
-       ps.executeUpdate();
+        try ( PreparedStatement ps = con.prepareStatement(UPDATE_USER_QUERY) ) {
+            ps.setString(1, this.getUsername());
+            ps.setString(2, this.getEmail());
+            ps.setString(3, this.getPassword());
+            ps.setInt(4, this.getGroupId());
+            ps.setInt(5, this.getId());
+            ps.executeUpdate();
+        }
     }  
     
     public void delete(Connection con) throws SQLException {
         if ( this.id != 0 ) {
-            PreparedStatement ps = con.prepareStatement(DELETE_USER_QUERY);
-            ps.setInt(1, this.id);
-            ps.executeUpdate();
-            this.id = 0;
+            try ( PreparedStatement ps = con.prepareStatement(DELETE_USER_QUERY) ) {
+                ps.setInt(1, this.id);
+                ps.executeUpdate();
+                this.id = 0;
+            }
         }
     }
     
     public static User[] loadAll(Connection con) throws SQLException {
         List<User> usersList = new ArrayList<User>();
-        ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery();
         
-        while ( rs.next() ) {
-            usersList.add(new User(rs));
+        try ( ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery() ) {
+            while ( rs.next() ) {
+                usersList.add(new User(rs));
+            }
         }
-       
         return usersList.toArray(new User[usersList.size()]);
     }
     
     public static User loadById(Connection con, int id) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        
-        if ( rs.next() ) {
-            return new User(rs);
+        User u = null;
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY) ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if ( rs.next() ) {
+                u = new User(rs);
+            }
+            rs.close();
         }
-        return null;
+        return u;
     }
     
     public static User[] loadAllByGroupId(Connection con, int id) throws SQLException {
         List<User> usersList = new ArrayList<User>();
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_GROUP_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
         
-        while ( rs.next() ) {
-            usersList.add(new User(rs));
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_BY_GROUP_ID_QUERY) ) {
+            ps.setInt(1, id);
+            try ( ResultSet rs = ps.executeQuery() ) {
+                while ( rs.next() ) {
+                    usersList.add(new User(rs));
+                }
+            }
         }
-       
         return usersList.toArray(new User[usersList.size()]);
     }
     

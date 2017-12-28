@@ -1,10 +1,10 @@
-package school_admin;
+package pl.maciejpajak.schoolAdmin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import programming_school.Group;
+import pl.maciejpajak.codingSchool.Group;
 
 public class GroupAdmin {
     

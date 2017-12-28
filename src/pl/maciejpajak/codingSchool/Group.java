@@ -1,4 +1,4 @@
-package programming_school;
+package pl.maciejpajak.codingSchool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,22 +34,25 @@ public class Group {
     
     public static Group[] loadAll(Connection con) throws SQLException {
         List<Group> groupList = new ArrayList<Group>();
-        ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery();
         
-        while ( rs.next() ) {
-            groupList.add( new Group(rs) );
+        try ( ResultSet rs = con.prepareStatement(LOAD_ALL_QUERY).executeQuery() ) {
+            while ( rs.next() ) {
+                groupList.add( new Group(rs) );
+            }
         }
-       
+        
         return groupList.toArray(new Group[groupList.size()]);
     }
     
     public static Group loadById(Connection con, int id) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY);
-        ps.setInt(1, id);
-        ResultSet rs = ps.executeQuery();
-        
-        if ( rs.next() ) {
-            return new Group(rs);
+        try ( PreparedStatement ps = con.prepareStatement(LOAD_BY_ID_QUERY) ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if ( rs.next() ) {
+                return new Group(rs);
+            }
+            rs.close();
         }
         return null;
     }
@@ -64,20 +67,23 @@ public class Group {
     
     private void saveNewToDb(Connection con) throws SQLException {
         String[] genereatedColumns = { "id" };
-        PreparedStatement ps = con.prepareStatement(CREATE_QUERY, genereatedColumns);
-        ps.setString(1, this.getName());
-        ps.executeUpdate();
-        ResultSet rs = ps.getGeneratedKeys();
-        if ( rs.next() ) {
-            this.id = rs.getInt(1);
-        }    
+        try ( PreparedStatement ps = con.prepareStatement(CREATE_QUERY, genereatedColumns) ) {
+            ps.setString(1, this.getName());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if ( rs.next() ) {
+                this.id = rs.getInt(1);
+            }
+            rs.close();
+        }
     }
     
     private void updateExistingInDb(Connection con) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(UPDATE_QUERY);
-        ps.setString(1, this.getName());
-        ps.setInt(2, this.getId());
-        ps.executeUpdate();
+        try ( PreparedStatement ps = con.prepareStatement(UPDATE_QUERY) ) {
+            ps.setString(1, this.getName());
+            ps.setInt(2, this.getId());
+            ps.executeUpdate();
+        }
     }
     
     public void delete(Connection con) throws SQLException {

@@ -1,11 +1,11 @@
-package school_admin;
+package pl.maciejpajak.schoolAdmin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import programming_school.Solution;
-import programming_school.User;
+import pl.maciejpajak.codingSchool.Solution;
+import pl.maciejpajak.codingSchool.User;
 
 public class UserApplication {
 
