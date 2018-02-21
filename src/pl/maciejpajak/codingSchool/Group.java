@@ -7,6 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Active record class for group
+ * 
+ * @author maciej-pajak
+ *
+ */
 public class Group {
     
     private static final String LOAD_ALL_QUERY = "SELECT * FROM user_group;";

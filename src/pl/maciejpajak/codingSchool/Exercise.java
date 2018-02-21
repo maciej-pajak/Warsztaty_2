@@ -7,6 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Active record class for solutions
+ * 
+ * @author maciej-pajak
+ *
+ */
 public class Exercise {
 
     private static final String LOAD_BY_ID_QUERY = "SELECT * FROM exercise WHERE id=?;";

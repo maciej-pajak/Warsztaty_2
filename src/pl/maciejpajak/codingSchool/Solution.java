@@ -9,6 +9,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Active record class for solutions
+ * 
+ * @author maciej-pajak
+ *
+ */
 public class Solution {
     
     private static final String LOAD_BY_ID_QUERY = "SELECT * FROM solution WHERE id=?;";
